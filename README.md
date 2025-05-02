@@ -1,9 +1,9 @@
 # KineDataComp
 Comparison of Kinematics from Raven Surgical Robot and TrakStar Motion Tracking System
 
-# How to use
 This is a python script that takes two input CSV files and creates stacked tables for each column against time, it also will sync any unsynced data and scale resolution to match the resolution of the lower resolution file.
 
+# How to use
 Download the data_compare.py file and then in powershell navagate to its directory (if you download it to your downloads folder on a windows machine you can use the command, make sure to change %USERNAME% to your windows username):
 ```bash
 cd C:\Users\%USERNAME%\Downloads
