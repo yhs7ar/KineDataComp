@@ -53,31 +53,31 @@ def load_csvs(file1_path, file2_path, timecol='time', scale1=1.0, shift1=0.0, in
     if timecol not in f1.columns or timecol not in f2.columns:
         raise ValueError(f"Time column '{timecol}' not found in both CSV files")
     
-    f1 = align_data(f1, timecol, scale1, shift1, invert1)
+    f1_processed = align_data(f1, timecol, scale1, shift1, invert1)
     
     # merge files
-    merge_files = pd.merge_asof(f1.sort_values(timecol), f2.sort_values(timecol), on=timecol, direction='nearest')
+    merge_files = pd.merge_asof(f1_processed.sort_values(timecol), f2.sort_values(timecol), on=timecol, direction='nearest')
     
-    return merge_files
+    return f1_processed, f2, merge_files
         
-def stacked_plots(merge_f, timecol="time"):
-    """generates the stacked plots plot for every column in the dataframe against time
+def stacked_plots(file, timecol="time", title_suffix=""):
+    """Creates a stacked plot figure of the input file
 
     Args:
-        merge_f (pd.DataFrame): merged dataframe to plot
-        timecol (str, optional): name of the time column in the merged dataframe. Defaults to "time".
+        file (pd.DataFrame): input file to create a figure from
+        timecol (str, optional): name of the time column. Defaults to "time".
+        title_suffix (str, optional): the suffix to add to the title to differentiate files. Defaults to "".
 
     Returns:
-        Figure: the stacked plot
+        Figure : output figure from the file
     """
-    
-    # get columns and put them in data_columns
-    data_columns = [col for col in merge_f.columns if col != timecol]
+    # get columns and put them in data columns
+    data_columns = [col for col in file.columns if col != timecol]
     
     # get the number of variables
     num_vars = len(data_columns)
     
-    # create the figure (subplots is a cool functionality I have never used that before)
+    # create the figure (subplots is a cool functionality I've never used before)
     fig, axes = plt.subplots(num_vars, 1, figsize=(10, 2*num_vars), sharex=True)
     
     # unarray axes if there is only 1 variable
@@ -86,7 +86,7 @@ def stacked_plots(merge_f, timecol="time"):
     
     # plot the variables
     for i, col in enumerate(data_columns):
-        axes[i].plot(merge_f[timecol], merge_f[col], label=col)
+        axes[i].plot(file[timecol], file[col], label=col)
         axes[i].set_ylabel(col)
         axes[i].grid(True)
         axes[i].legend()
@@ -94,6 +94,8 @@ def stacked_plots(merge_f, timecol="time"):
     # set x label
     axes[-1].set_xlabel(timecol)
     
+    # change the title for that plot
+    plt.suptitle(f"Data from {title_suffix}")
     plt.tight_layout()
     return fig
 
@@ -121,26 +123,33 @@ def plot_to_image(fig, output_file):
         raise RuntimeError("Failed to read temporary image file.")
     
     # I would import os here to delete the "temp_plot.png" file, but I technically am not allowed that import so I won't do that.
+    print("Note: Temporary file 'temp_plot.png' was not automatically removed")
     
-def main(file1, file2, output_image="stacked_plots.png", timecol="time", scale1=1.0, shift1=0.0, invert1=False):
+def main(file1, file2, output_prefix="stacked_plots", timecol="time", scale1=1.0, shift1=0.0, invert1=False):
     """Takes the input file directories and generates the image that is the figures
 
     Args:
         file1 (string): directory to CSV 1
         file2 (string): directory to CSV 2
-        output_image (str, optional): name of the output image. Defaults to "stacked_plots.png".
+        output_prefix (str, optional): prefix for the output images. Defaults to "stacked_plots".
         timecol (str, optional): name of the time column in the CSV files. Defaults to "time".
         scale1 (float, optional): scaling factor to apply to file 1. Defaults to 1.0.
         shift1 (float, optional): shifting factor to apply to file 1. Defaults to 0.0.
         invert1 (bool, optional): whether or not to invert the data columns in file 1. Defaults to False.
     """
     
-    merge_data = load_csvs(file1, file2, timecol, scale1, shift1, invert1)
+    f1_processed, f2, merge_data = load_csvs(file1, file2, timecol, scale1, shift1, invert1)
     
-    fig = stacked_plots(merge_data, timecol)
+    fig1 = stacked_plots(f1_processed, timecol, "File 1 (Processed)")
+    plot_to_image(fig1, f"{output_prefix}_file1.png")
     
-    plot_to_image(fig, output_image)
-    print(f"Stacked plots saved to {output_image}")
+    fig2 = stacked_plots(f2, timecol, "File 2")
+    plot_to_image(fig2, f"{output_prefix}_file2.png")
+    
+    fig_merged = stacked_plots(merge_data, timecol, "Merged Data")
+    plot_to_image(fig_merged, f"{output_prefix}_merged.png")
+    
+    print(f"Plots saved to {output_prefix}_file1.png, {output_prefix}_file2.png, and {output_prefix}_merged.png")
     
 # this next part is to make this work as a standalone script, but it could also work if you copy pasted the above lines into a jupyter notebook or another python file
 
@@ -148,16 +157,16 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv)<3:
-        print("Usage python DataImport.py <file1.csv> <file2.csv> [output_image.png] [time_column_name] [scale1 (float)] [shift1 (float)] [invert1 (true or false)]")
-        print("Example: python DataImport.py data1.csv data2.csv output.png timestamp 1.0 0.0 False")
+        print("Usage python DataImport.py <file1.csv> <file2.csv> [output_prefix] [time_column_name] [scale1 (float)] [shift1 (float)] [invert1 (true or false)]")
+        print("Example: python DataImport.py data1.csv data2.csv output timestamp 1.0 0.0 False")
         sys.exit(1)
     
     file1 = sys.argv[1]
     file2 = sys.argv[2]
-    output_image = sys.argv[3] if len(sys.argv) > 3 else "stacked_plots.png"
+    output_prefix = sys.argv[3] if len(sys.argv) > 3 else "stacked_plots"
     timecol = sys.argv[4] if len(sys.argv) > 4 else "time"
     scale1 = float(sys.argv[5]) if len(sys.argv) > 5 else 1.0
-    shift1 = float(sys.argv[6]) if len(sys.argv) > 6 else 0.0,
+    shift1 = float(sys.argv[6]) if len(sys.argv) > 6 else 0.0
     invert1 = sys.argv[7].lower() == 'true' if len(sys.argv) > 7 else False
     
-    main(file1, file2, output_image, timecol, scale1, shift1, invert1)
+    main(file1, file2, output_prefix, timecol, scale1, shift1, invert1)
