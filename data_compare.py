@@ -157,8 +157,8 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv)<3:
-        print("Usage python DataImport.py <file1.csv> <file2.csv> [output_prefix] [time_column_name] [scale1 (float)] [shift1 (float)] [invert1 (true or false)]")
-        print("Example: python DataImport.py data1.csv data2.csv output timestamp 1.0 0.0 False")
+        print("Usage python data_compare.py <file1.csv> <file2.csv> [output_prefix] [time_column_name] [scale1 (float)] [shift1 (float)] [invert1 (true or false)]")
+        print("Example: python data_compare.py data1.csv data2.csv output timestamp 1.0 0.0 False")
         sys.exit(1)
     
     file1 = sys.argv[1]
