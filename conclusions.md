@@ -28,3 +28,6 @@ The raven data also had velocity data for each grip (at least I am assuming PSMR
 
 I also plotted the common columns with eachother on plots and they are nearly identical as seen in the image.
 ![overlapping data](./images/T06_overlap.png)
+overlapping T06 data
+
+I then ran the script on all of the over versions given and all of those images can be found in the images folder in the repository.  No transformations were necessary to obtain near perfect overlap, only the time shift necessary to make the times on the plots line up.
