@@ -18,4 +18,4 @@ Then you type
 ```bash
 python data_compare.py
 ```
-and it will output an example of usage and the inputs, change your inputs accordingly and the file will create a png of your graphs to be used for analysis.  If you want to exclude certain columns, you have to change your CSV file so that it no longer includes those columns.
+and it will output an example of usage and the inputs, change your inputs accordingly and the file will create a png of your graphs to be used for analysis.  If you want to exclude certain columns, you have to change your CSV file so that it no longer includes those columns.  You also want to make sure you chose the proper column for the time column between the two files.
