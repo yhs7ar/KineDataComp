@@ -24,4 +24,7 @@ Without any manipulation, I was able to find the following variables that corres
 |PSML_gripper_angle | PSML_gripper_angle|
 |PSMR_gripper_angle | PSMR_gripper_angle|
 
-The raven data also had velocity data for each grip (at least I am assuming PSMR/PSML are the grips of the robot)
+The raven data also had velocity data for each grip (at least I am assuming PSMR/PSML are the grips of the robot).
+
+I also plotted the common columns with eachother on plots and they are nearly identical as seen in the image.
+![overlapping data](./images/T06_overlap.png)
