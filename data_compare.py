@@ -124,7 +124,50 @@ def plot_to_image(fig, output_file):
     
     # I would import os here to delete the "temp_plot.png" file, but I technically am not allowed that import so I won't do that.
     print("Note: Temporary file 'temp_plot.png' was not automatically removed")
+
+def plot_overlapping_columns(file1, file2, timecol="time", title="Overlapping Columns"):
+    """Creates a plot with all columns of the same name from both files overlapped
     
+    Args:
+        file1 (pd.DataFrame): first input file
+        file2 (pd.DataFrame): second input file
+        timecol (str, optional): name of the time column. Defaults to "time".
+        title (str, optional): title for the plot. Defaults to "Overlapping Columns".
+        
+    Returns:
+        Figure: matplotlib figure with overlapped plots
+    """
+    
+    # get the common columns
+    common_columns = set(file1.columns).intersection(set(file2.columns))- {timecol}
+    
+    if not common_columns:
+        raise ValueError("No common columns found between the files (excluding time column)")
+    
+    #create figure
+    fig, axes = plt.subplots(len(common_columns), 1, figsize=(10, 2*len(common_columns)), sharex = True)
+    
+    # unarray axes if there is only 1 variable
+    if len (common_columns) == 1:
+        axes = [axes]
+    
+    # plot the common variables
+    for i, col in enumerate(common_columns):
+        axes[i].plot(file1[timecol], file1[col], label=f"File1 {col}")
+        axes[i].plot(file2[timecol], file2[col], label=f"File2 {col}")
+        axes[i].set_ylabel(col)
+        axes[i].grid(True)
+        axes[i].legend()
+    
+    # set x label
+    axes[-1].set_xlabel(timecol)
+    
+    # set title
+    plt.suptitle(title)
+    plt.tight_layout()
+    return fig
+
+
 def main(file1, file2, output_prefix="stacked_plots", timecol="time", scale1=1.0, shift1=0.0, invert1=False):
     """Takes the input file directories and generates the image that is the figures
 
@@ -149,7 +192,10 @@ def main(file1, file2, output_prefix="stacked_plots", timecol="time", scale1=1.0
     fig_merged = stacked_plots(merge_data, timecol, "Merged Data")
     plot_to_image(fig_merged, f"{output_prefix}_merged.png")
     
-    print(f"Plots saved to {output_prefix}_file1.png, {output_prefix}_file2.png, and {output_prefix}_merged.png")
+    fig_overlap = plot_overlapping_columns(f1_processed, f2, timecol, "Overlapping Columns Comparison")
+    plot_to_image(fig_overlap, f"{output_prefix}_overlap.png")
+    
+    print(f"Plots saved to {output_prefix}_file1.png, {output_prefix}_file2.png, {output_prefix}_merged.png, and {output_prefix}_overlap.png")
     
 # this next part is to make this work as a standalone script, but it could also work if you copy pasted the above lines into a jupyter notebook or another python file
 
